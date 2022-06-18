@@ -1,6 +1,7 @@
 import './styles.css'
+import { composeWithDevTools } from 'redux-devtools-extension'
 //import { createStore } from './createStore'
-import { applyMiddleware, createStore } from 'redux'
+import { applyMiddleware, createStore, compose} from 'redux'
 import {rootReducer} from './redux/rootReducer'
 //import { DECREMENT, INCREMENT } from './redux/types'
 import { decrement, increment, asyncIncrement, changeTheme } from './redux/actions'
@@ -31,10 +32,26 @@ function logger(state){
 // create store
 // 01 - в store ми вказуємо конкретні події на сторніці
 // dispatch - провідник, диспетчер, який передає вхідну інфу - подію в store
+
+// 01
+//const store = createStore(
+//  rootReducer, 
+//  compose(
+//    applyMiddleware(thunk, logger),
+//    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+//  )
+//  )
+// 02
 const store = createStore(
-  rootReducer, 
-  applyMiddleware(thunk, logger)  // logger - additional middleWare- added manual. In this case logger need to check all of the - state/ action, abowe
+    rootReducer, 
+    composeWithDevTools(
+      applyMiddleware(thunk, logger)
+    )
   )
+
+
+
+
 // buttons - increment/decrement
 addBtn.addEventListener('click', () => {
   store.dispatch(increment())
@@ -52,7 +69,6 @@ asyncBtn.addEventListener('click', () =>{
 
 // button - change theme
 themeBtn.addEventListener('click', () =>{
-
   const newTheme = document.body.classList.contains('light')
     ? 'dark'
     : 'light'
@@ -65,8 +81,14 @@ store.subscribe(() => {
   const state = store.getState()
 
   counter.textContent = state.counter
-  document.body.className = state.theme.value
+  document.body.className = state.theme.value;
+
+  [addBtn, subBtn,  themeBtn, asyncBtn].forEach( btn => {
+    btn.disabled = state.theme.disabled
+  })
 })
+
+
 // default initial state = 0
 store.dispatch({type: 'ININT_APPLICATION'})
 
